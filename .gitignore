@@ -1,0 +1,33 @@
+# Binaries
+/service-catalog-api
+
+# SQLite DB file
+services.db
+
+# Build artifacts
+*.out
+*.exe
+*.log
+
+# Test cache and coverage
+*.test
+*.coverprofile
+
+# Vendor dependencies (if you're not vendoring intentionally)
+vendor/
+
+# Editor configs
+.vscode/
+.idea/
+*.sw?
+
+# Dependency lock (if not needed in repo)
+go.sum
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore everything in /scripts output (optional)
+scripts/*.sh~
+

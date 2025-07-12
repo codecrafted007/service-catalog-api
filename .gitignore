@@ -30,4 +30,3 @@ Thumbs.db
 
 # Ignore everything in /scripts output (optional)
 scripts/*.sh~
-

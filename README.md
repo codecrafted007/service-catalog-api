@@ -119,3 +119,59 @@ Terminal 2:
 ./scripts/test_crud.sh <apikey>
 ```
 
+```bash
+./scripts/test_crud.sh 96beb0bc5bd8766c7354e2da76bff479                                                                               ──(Sat,Jul12)─┘
+Creating a new service...
+{"code":200,"data":1,"error":"","success":true}
+Created service with ID: 1
+
+Fetching created service...
+{
+  "code": 200,
+  "data": {
+    "id": 1,
+    "name": "Test Service",
+    "description": "Test Description",
+    "createdAt": "2025-07-12T17:50:04Z"
+  },
+  "error": "",
+  "success": true
+}
+
+Updating service...
+{
+  "code": 200,
+  "data": "service updated",
+  "error": "",
+  "success": true
+}
+
+Fetching updated service...
+{
+  "code": 200,
+  "data": {
+    "id": 1,
+    "name": "Updated Service",
+    "description": "Updated Description",
+    "createdAt": "2025-07-12T17:50:04Z"
+  },
+  "error": "",
+  "success": true
+}
+
+Deleting service...
+{
+  "code": 200,
+  "data": "service deleted successfully",
+  "error": "",
+  "success": true
+}
+
+Verifying deletion...
+{
+  "code": 404,
+  "data": null,
+  "error": "Service not found",
+  "success": false
+}
+```

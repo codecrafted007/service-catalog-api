@@ -148,3 +148,11 @@ definitions:
         type: string
       description:
         type: string
+
+  VersionInput:
+    type: object
+    required:
+      - version
+    properties:
+      version:
+        type: string

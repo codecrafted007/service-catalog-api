@@ -73,28 +73,43 @@ scripts/          # CLI and helper scripts
 
 ## Design Decisions
  No ORM: All DB access is raw SQL for clarity and control.
+
  Storage Interface: DB layer is pluggable (can support MySQL/Postgres).
+
  Zap Logging: Chosen for production-grade structured logs.
+
  API Key Auth: Simplest auth approach. Future-ready for JWT or caching.
+
  Makefile: Automates build/test/run. Included scripts/make.sh for ease.
 
-## Extensibility Ideas (if more time)
+## Extensibility Ideas
+
 Add full Swagger UI via /docs
+
 Implement version CRUD endpoints
+
 Support multiple environments (via .env)
+
 Add API key creation endpoint + role-based access
+
 Write full integration test suite
+
 Replace Gorilla Mux with chi or gin
 
 ##  Trade-offs
 mux is archived but retained for readability.
+
 SQLite used for simplicity — not ideal for production scale.
+
 No Swagger-based code generation — routes are defined manually for clarity.
+
 API key is stored plaintext in DB (not hashed for this demo).
 
 ## Quick API Test Scripy
 To test the CRUD flow end-to-end, use the helper script:
+
 Copy the api key from the logs 
+
 Terminal 1:
 ```bash
 ./scripts/make.sh 

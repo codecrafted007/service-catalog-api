@@ -58,17 +58,17 @@ Pagination (?page=1&limit=10)
 
 ## Project Structure
 ```bash
-cmd/api/          # Entry point (main.go)
+cmd/api/                  # Entry point (main.go)
 internal/
-  handler/        # HTTP handlers
-  middleware/     # API key validation
-  storage/        # Pluggable DB interface
-  utils/          # Helpers for JSON responses
-  logger/         # Zap logger setup
-model/            # Service & Version models
-db/schema.sql     # SQLite schema
-docs/swagger.yaml # OpenAPI spec
-scripts/          # CLI and helper scripts
+  handler/                # HTTP handlers
+  middleware/             # API key validation
+  storage/                # Pluggable DB interface
+  utils/                  # Helpers for JSON responses
+  logger/                 # Zap logger setup
+model/                    # Service & Version models
+db/schema.sql             # SQLite schema
+docs/service-catlog.yaml  # OpenAPI spec
+scripts/                  # CLI and helper scripts
 ```
 
 ## Design Decisions

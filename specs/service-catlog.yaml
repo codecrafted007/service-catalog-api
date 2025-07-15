@@ -115,7 +115,6 @@ paths:
                 properties:
                   data:
                     type: object
-                    nullable: true
                   error:
                     type: string
                     example: "Service not found"
@@ -149,7 +148,6 @@ paths:
                 properties:
                   data:
                     type: object
-                    nullable: true
                   error:
                     type: string
                     example: "Service not found"

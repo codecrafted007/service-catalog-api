@@ -136,12 +136,26 @@ func (s *sqliteStore) CreateService(service *model.Service) (int64, error) {
 }
 
 func (s *sqliteStore) UpdateService(id int, service *model.Service) error {
-	_, err := s.db.Exec(`
+	result, err := s.db.Exec(`
 		UPDATE services
 		SET name = ?, description = ?
 		WHERE id = ?
 	`, service.Name, service.Description, id)
-	return err
+
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (s *sqliteStore) DeleteService(id int) error {

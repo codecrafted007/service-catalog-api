@@ -120,6 +120,11 @@ func (h *Handler) UpdateService(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Store.UpdateService(id, &svc)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			h.Logger.Warnw("Service not found", "id", id)
+			utils.WriteJSON(w, http.StatusNotFound, nil, "Service not found")
+			return
+		}
 		h.Logger.Errorf("failed to update service %d: %v", id, err)
 		utils.WriteJSON(w, http.StatusInternalServerError, nil, "could not update service")
 		return

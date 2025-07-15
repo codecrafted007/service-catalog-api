@@ -53,9 +53,14 @@ paths:
         200:
           description: List of services
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/Service"
+            allOf:
+              - $ref: "#/definitions/Response"
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/definitions/Service"
 
     post:
       summary: Create a new service
@@ -71,10 +76,15 @@ paths:
         200:
           description: Service created
           schema:
-            type: object
-            properties:
-              id:
-                type: integer
+            allOf:
+              - $ref: "#/definitions/Response"
+              - type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
 
   /services/{id}:
     get:
@@ -90,9 +100,25 @@ paths:
         200:
           description: Service found
           schema:
-            $ref: "#/definitions/Service"
+            allOf:
+              - $ref: "#/definitions/Response"
+              - type: object
+                properties:
+                  data:
+                    $ref: "#/definitions/Service"
         404:
           description: Service not found
+          schema:
+            allOf:
+              - $ref: "#/definitions/Response"
+              - type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+                  error:
+                    type: string
+                    example: "Service not found"
 
     put:
       summary: Update service
@@ -110,7 +136,23 @@ paths:
         - ApiKeyAuth: []
       responses:
         200:
-          description: Service updated
+          description: Service updated successfully
+          schema:
+            $ref: "#/definitions/Response"
+
+        404:
+          description: Service not found
+          schema:
+            allOf:
+              - $ref: "#/definitions/Response"
+              - type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+                  error:
+                    type: string
+                    example: "Service not found"
 
     delete:
       summary: Delete service
@@ -124,8 +166,21 @@ paths:
       responses:
         200:
           description: Service deleted
+          schema:
+            $ref: "#/definitions/Response"
 
 definitions:
+  Response:
+    type: object
+    properties:
+      code:
+        type: integer
+      data:
+        type: object
+      error:
+        type: string
+      success:
+        type: boolean
   Service:
     type: object
     properties:

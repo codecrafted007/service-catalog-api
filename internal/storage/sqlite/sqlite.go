@@ -1,9 +1,12 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 
+	"github.com/codecrafted007/service-catalog-api/internal/logger"
 	"github.com/codecrafted007/service-catalog-api/internal/storage"
 	"github.com/codecrafted007/service-catalog-api/model"
 	"github.com/jmoiron/sqlx"
@@ -25,47 +28,71 @@ func (ss *sqliteStore) DB() *sqlx.DB {
 	return ss.db
 }
 
-func (ss *sqliteStore) ListServices(filter, sort string, page, limit int) ([]model.Service, error) {
+func (ss *sqliteStore) ListServices(ctx context.Context, filter, sort string, page, limit int) ([]model.Service, error) {
 	offset := (page - 1) * limit
+
 	var queryBuilder strings.Builder
-	queryBuilder.WriteString("select * from services")
+	queryBuilder.WriteString(`
+		SELECT s.id, s.name, s.description, s.created_at,
+		GROUP_CONCAT(v.version, ',') AS versions
+		FROM services s
+		LEFT JOIN versions v ON s.id = v.service_id`)
 
-	args := map[string]interface{}{
-		"limit":  limit,
-		"offset": offset,
-	}
-
-	queryClauses := []string{}
+	args := make([]interface{}, 0)
+	conditions := make([]string, 0)
 
 	if filter != "" {
-		queryClauses = append(queryClauses, "name like :filter or description like :filter")
-		args["filter"] = "%" + filter + "%"
+		conditions = append(conditions, "s.name LIKE ? OR s.description LIKE ?")
+		filterValue := fmt.Sprintf("%%%s%%", filter)
+		args = append(args, filterValue, filterValue)
 	}
 
-	if len(queryClauses) > 0 {
-		queryBuilder.WriteString(" WHERE " + strings.Join(queryClauses, " AND "))
+	if len(conditions) > 0 {
+		queryBuilder.WriteString(" WHERE ")
+		queryBuilder.WriteString(strings.Join(conditions, " AND "))
 	}
+
+	queryBuilder.WriteString(" GROUP BY s.id")
 
 	if sort != "" {
-		sortBy := "name"
-		if strings.ToLower(sort) == "createdAt" {
-			sortBy = "createdAt"
+		sortBy := "s.name"
+		if strings.ToLower(sort) == "createdat" {
+			sortBy = "s.created_at"
 		}
 		queryBuilder.WriteString(" ORDER BY " + sortBy)
 	}
 
-	queryBuilder.WriteString(" limit :limit offset :offset")
-
-	stmt, err := ss.db.PrepareNamed(queryBuilder.String())
+	queryBuilder.WriteString(" LIMIT ? OFFSET ?")
+	args = append(args, limit, offset)
+	logger.L().Infow("Executing query", "query", queryBuilder.String(), "args", args)
+	rows, err := ss.db.QueryContext(ctx, queryBuilder.String(), args...)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
 	var services []model.Service
-	err = stmt.Select(&services, args)
-	return services, err
+
+	for rows.Next() {
+		var svc model.Service
+		var versionsCSV sql.NullString
+
+		err := rows.Scan(&svc.ID, &svc.Name, &svc.Description, &svc.CreatedAt, &versionsCSV)
+		if err != nil {
+			return nil, err
+		}
+		if versionsCSV.Valid {
+			svc.Versions = strings.Split(versionsCSV.String, ",")
+		} else {
+			svc.Versions = []string{}
+		}
+		services = append(services, svc)
+	}
+
+	return services, nil
 }
 
-func (ss *sqliteStore) GetServiceById(serviceId int) (*model.Service, error) {
+func (ss *sqliteStore) GetServiceById(ctx context.Context, serviceId int) (*model.Service, error) {
 	rows, err := ss.db.Queryx(`
 		SELECT 
 			s.id AS service_id, s.name, s.description, s.created_at AS service_created_at,
@@ -103,11 +130,7 @@ func (ss *sqliteStore) GetServiceById(serviceId int) (*model.Service, error) {
 		}
 
 		if verID.Valid && verStr.Valid && verCreatedAt.Valid {
-			svc.Versions = append(svc.Versions, model.Version{
-				ID:        int(verID.Int64),
-				Version:   verStr.String,
-				CreatedAt: verCreatedAt.Time,
-			})
+			svc.Versions = append(svc.Versions, verStr.String)
 		}
 	}
 
@@ -124,7 +147,7 @@ func (s *sqliteStore) IsValidAPIKey(key string) bool {
 	return err == nil && exists
 }
 
-func (s *sqliteStore) CreateService(service *model.Service) (int64, error) {
+func (s *sqliteStore) CreateService(ctx context.Context, service *model.Service) (int64, error) {
 	result, err := s.db.Exec(`
 		INSERT INTO services (name, description, created_at)
 		VALUES (?, ?, CURRENT_TIMESTAMP)
@@ -135,7 +158,7 @@ func (s *sqliteStore) CreateService(service *model.Service) (int64, error) {
 	return result.LastInsertId()
 }
 
-func (s *sqliteStore) UpdateService(id int, service *model.Service) error {
+func (s *sqliteStore) UpdateService(ctx context.Context, id int, service *model.Service) error {
 	result, err := s.db.Exec(`
 		UPDATE services
 		SET name = ?, description = ?
@@ -158,10 +181,61 @@ func (s *sqliteStore) UpdateService(id int, service *model.Service) error {
 	return nil
 }
 
-func (s *sqliteStore) DeleteService(id int) error {
+func (s *sqliteStore) DeleteService(ctx context.Context, id int) error {
 	_, err := s.db.Exec(`
 		DELETE FROM services
 		WHERE id = ?
 	`, id)
 	return err
+}
+
+func (s *sqliteStore) CreateVersion(ctx context.Context, v *model.Version) (int64, error) {
+	result, err := s.db.ExecContext(ctx, `
+		INSERT INTO versions (service_id, version, changelog, created_at)
+		VALUES (?, ?, ?, ?)
+	`, v.ServiceID, v.Version, v.Changelog, v.CreatedAt)
+	if err != nil {
+		return 0, err
+	}
+	lastInsertID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return lastInsertID, nil
+}
+
+func (s *sqliteStore) GetVersionsByServiceID(ctx context.Context, serviceID int64) ([]*model.Version, error) {
+	var versions []*model.Version
+	err := s.db.SelectContext(ctx, &versions, `
+		SELECT id, service_id, version, changelog, created_at
+		FROM versions
+		WHERE service_id = ?
+		ORDER BY created_at DESC`, serviceID)
+	return versions, err
+}
+
+func (s *sqliteStore) GetVersionByID(ctx context.Context, versionID int64) (*model.Version, error) {
+	var version model.Version
+	err := s.db.GetContext(ctx, &version, `
+		SELECT id, service_id, version, changelog, created_at
+		FROM versions
+		WHERE id = ?
+	`, versionID)
+	if err != nil {
+		return nil, err
+	}
+	return &version, nil
+}
+
+func (s *sqliteStore) DeleteVersionByID(ctx context.Context, versionID int64) (bool, error) {
+	result, err := s.db.ExecContext(ctx, "DELETE FROM versions WHERE id = ?", versionID)
+	if err != nil {
+		return false, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return rows > 0, nil
 }

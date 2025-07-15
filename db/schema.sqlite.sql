@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS versions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     service_id INTEGER NOT NULL,
     version TEXT NOT NULL,
+    changelog TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(service_id) REFERENCES services(id) ON DELETE CASCADE
 );

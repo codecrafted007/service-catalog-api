@@ -122,11 +122,11 @@ Copy the API key from the logs.
 ```bash
 ./scripts/test_crud.sh <apikey>
 ```
+<details>
+<summary>Click to expand test output</summary>
 
 ```bash
-./scripts/test_crud.sh f1b96af02cdc731d43416913a0d6c2b8
-
-./scripts/test_crud.sh 8cf9a281dccea6d6c3129fe3d9a330db                              ──(Tue,Jul15)─┘
+./scripts/test_crud.sh 8cf9a281dccea6d6c3129fe3d9a330db                              
 ==> [1] Creating 1000 services...
 ==> [2] Listing services without any query parameters (should return default 20)...
 {
@@ -740,8 +740,11 @@ Copy the API key from the logs.
   },
   "error": "",
   "success": true
-}
+} 
 ```
+</details> 
+
+
 
 ## Note on Versions
 

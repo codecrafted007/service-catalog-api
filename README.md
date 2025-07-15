@@ -120,19 +120,19 @@ Terminal 2:
 ```
 
 ```bash
-./scripts/test_crud.sh 96beb0bc5bd8766c7354e2da76bff479                                                                               ──(Sat,Jul12)─┘
+./scripts/test_crud.sh f1b96af02cdc731d43416913a0d6c2b8                                                                 
 Creating a new service...
-{"code":200,"data":1,"error":"","success":true}
-Created service with ID: 1
+{"code":200,"data":4,"error":"","success":true}
+Created service with ID: 4
 
 Fetching created service...
 {
   "code": 200,
   "data": {
-    "id": 1,
+    "id": 4,
     "name": "Test Service",
     "description": "Test Description",
-    "createdAt": "2025-07-12T17:50:04Z"
+    "createdAt": "2025-07-15T06:05:22Z"
   },
   "error": "",
   "success": true
@@ -150,10 +150,10 @@ Fetching updated service...
 {
   "code": 200,
   "data": {
-    "id": 1,
+    "id": 4,
     "name": "Updated Service",
     "description": "Updated Description",
-    "createdAt": "2025-07-12T17:50:04Z"
+    "createdAt": "2025-07-15T06:05:22Z"
   },
   "error": "",
   "success": true
@@ -168,6 +168,14 @@ Deleting service...
 }
 
 Verifying deletion...
+{
+  "code": 404,
+  "data": null,
+  "error": "Service not found",
+  "success": false
+}
+
+Trying to update non existent service...
 {
   "code": 404,
   "data": null,

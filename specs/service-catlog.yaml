@@ -285,15 +285,10 @@ definitions:
     type: object
     required:
       - name
-      - version
     properties:
       name:
         type: string
       description:
-        type: string
-      version:
-        type: string
-      changelog:
         type: string
 
   Version:

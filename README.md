@@ -7,8 +7,8 @@ A simple, production-ready REST API to manage services and their versions. Built
 ## Tech Stack
 
 - **Language**: Go 1.21+
-- **Router**: Gorilla Mux (simple, archived — used for clarity)
-- **Database**: SQLite (via `sqlx` — pluggable interface)
+- **Router**: Gorilla Mux (simple, archived  used for clarity)
+- **Database**: SQLite (via `sqlx`  pluggable interface)
 - **Logging**: Zap (structured, production-ready)
 - **Testing**: `testing` + `httptest` + `testify`
 
@@ -26,7 +26,7 @@ go run ./cmd/api --db-driver=sqlite3 --db-dsn=services.db --port=8080
 The server will start on: http://localhost:8080
 
 ## API Authentication
-All endpoints require a valid API key passed via header:
+All endpoints require a valid API key passed via the header:
 
 ```bash
 X-API-Key: <your-key>
@@ -58,17 +58,17 @@ Pagination (?page=1&limit=10)
 
 ## Project Structure
 ```bash
-cmd/api/          # Entry point (main.go)
+cmd/api/                  # Entry point (main.go)
 internal/
-  handler/        # HTTP handlers
-  middleware/     # API key validation
-  storage/        # Pluggable DB interface
-  utils/          # Helpers for JSON responses
-  logger/         # Zap logger setup
-model/            # Service & Version models
-db/schema.sql     # SQLite schema
-docs/swagger.yaml # OpenAPI spec
-scripts/          # CLI and helper scripts
+  handler/                # HTTP handlers
+  middleware/             # API key validation
+  storage/                # Pluggable DB interface
+  utils/                  # Helpers for JSON responses
+  logger/                 # Zap logger setup
+model/                    # Service & Version models
+db/schema.sql             # SQLite schema
+docs/service-catlog.yaml  # OpenAPI spec
+scripts/                  # CLI and helper scripts
 ```
 
 ## Design Decisions

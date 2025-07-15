@@ -37,3 +37,10 @@ echo
 
 echo "Verifying deletion..."
 curl -s -H "X-API-Key: $API_KEY" "$BASE_URL/services/$SERVICE_ID" | jq
+
+echo
+echo "Trying to update non existent service..."
+curl -s -X PUT "$BASE_URL/services/9999" \
+    -H "Content-Type: application/json" \
+    -H "X-API-Key: $API_KEY" \
+    -d '{"name":"Random Service","description":"Should not exist"}' | jq

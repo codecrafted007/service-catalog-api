@@ -167,6 +167,90 @@ paths:
           schema:
             $ref: "#/definitions/Response"
 
+  /services/{id}/versions:
+    get:
+      summary: List versions for a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: List of versions
+          schema:
+            allOf:
+              - $ref: "#/definitions/Response"
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/definitions/Version"
+
+    post:
+      summary: Create a version for a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/VersionInput"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Version created
+          schema:
+            allOf:
+              - $ref: "#/definitions/Response"
+              - type: object
+                properties:
+                  data:
+                    $ref: "#/definitions/Version"
+
+  /versions/{id}:
+    get:
+      summary: Get version by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Version found
+          schema:
+            allOf:
+              - $ref: "#/definitions/Response"
+              - type: object
+                properties:
+                  data:
+                    $ref: "#/definitions/Version"
+
+    delete:
+      summary: Delete version
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Version deleted
+          schema:
+            $ref: "#/definitions/Response"
+
 definitions:
   Response:
     type: object
@@ -179,6 +263,7 @@ definitions:
         type: string
       success:
         type: boolean
+
   Service:
     type: object
     properties:
@@ -191,16 +276,40 @@ definitions:
       created_at:
         type: string
         format: date-time
+      versions:
+        type: array
+        items:
+          type: string
 
   ServiceInput:
     type: object
     required:
       - name
+      - version
     properties:
       name:
         type: string
       description:
         type: string
+      version:
+        type: string
+      changelog:
+        type: string
+
+  Version:
+    type: object
+    properties:
+      id:
+        type: integer
+      serviceId:
+        type: integer
+      version:
+        type: string
+      changelog:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
 
   VersionInput:
     type: object
@@ -208,4 +317,6 @@ definitions:
       - version
     properties:
       version:
+        type: string
+      changelog:
         type: string

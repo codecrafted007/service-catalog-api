@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,11 +20,11 @@ type mockStorage struct {
 	service  *model.Service
 }
 
-func (m *mockStorage) ListServices(string, string, int, int) ([]model.Service, error) {
+func (m *mockStorage) ListServices(context.Context, string, string, int, int) ([]model.Service, error) {
 	return m.services, nil
 }
 
-func (m *mockStorage) CreateService(*model.Service) (int64, error) {
+func (m *mockStorage) CreateService(context.Context, *model.Service) (int64, error) {
 	return 123, nil
 }
 
@@ -34,14 +35,27 @@ func (m *mockStorage) IsValidAPIKey(key string) bool {
 	return true
 }
 
-func (m *mockStorage) GetServiceById(id int) (*model.Service, error) {
+func (m *mockStorage) GetServiceById(xtx context.Context, id int) (*model.Service, error) {
 	return m.service, nil
 }
-func (m *mockStorage) UpdateService(id int, s *model.Service) error {
+func (m *mockStorage) UpdateService(xtx context.Context, id int, s *model.Service) error {
 	return nil
 }
-func (m *mockStorage) DeleteService(id int) error {
+func (m *mockStorage) DeleteService(xtx context.Context, id int) error {
 	return nil
+}
+
+func (m *mockStorage) CreateVersion(ctx context.Context, v *model.Version) (int64, error) {
+	return 0, nil
+}
+func (m *mockStorage) GetVersionsByServiceID(ctx context.Context, serviceID int64) ([]*model.Version, error) {
+	return nil, nil
+}
+func (m *mockStorage) GetVersionByID(ctx context.Context, versionID int64) (*model.Version, error) {
+	return nil, nil
+}
+func (m *mockStorage) DeleteVersionByID(ctx context.Context, versionID int64) (bool, error) {
+	return false, nil
 }
 
 func TestListServices(t *testing.T) {
@@ -52,7 +66,7 @@ func TestListServices(t *testing.T) {
 	}
 
 	logger := zap.NewNop().Sugar()
-	h := New(mock, logger)
+	h := NewServiceHandler(mock, logger)
 
 	req := httptest.NewRequest(http.MethodGet, "/services?filter=Test&page=1&sort=name", nil)
 	rec := httptest.NewRecorder()
@@ -73,7 +87,7 @@ func TestGetServiceByID(t *testing.T) {
 	}
 
 	logger := zap.NewNop().Sugar()
-	h := New(mock, logger)
+	h := NewServiceHandler(mock, logger)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/services/{id}", h.GetServiceByID).Methods("GET")

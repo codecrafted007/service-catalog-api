@@ -48,14 +48,20 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(middleware.APIKeyAuth(store.IsValidAPIKey))
 
-	h := handler.New(store, logger.L())
+	h := handler.NewServiceHandler(store, logger.L())
 
 	r.HandleFunc("/services", h.ListServices).Methods("GET")
 	r.HandleFunc("/services/{id}", h.GetServiceByID).Methods("GET")
-
 	r.HandleFunc("/services", h.CreateService).Methods("POST")
 	r.HandleFunc("/services/{id}", h.UpdateService).Methods("PUT")
 	r.HandleFunc("/services/{id}", h.DeleteService).Methods("DELETE")
+
+	vh := handler.NewVersionHandler(store, logger.L())
+
+	r.HandleFunc("/services/{id}/versions", vh.CreateVersion).Methods("POST")
+	r.HandleFunc("/services/{id}/versions", vh.ListVersions).Methods("GET")
+	r.HandleFunc("/versions/{id}", vh.GetVersion).Methods("GET")
+	r.HandleFunc("/versions/{id}", vh.DeleteVersion).Methods("DELETE")
 
 	addr := fmt.Sprintf(":%s", *httpPort)
 	logger.L().Infof("Listening on %s", addr)
